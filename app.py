@@ -799,6 +799,12 @@ def upload_pdf():
 
     return "✅ PDF uploaded successfully"
 
+from make_admin import make_admin
+
+@app.route("/make_admin/<username>")
+def run_make_admin(username):
+    return make_admin(username)
+
 # ---------------- MAIN ----------------
 init_db()
 

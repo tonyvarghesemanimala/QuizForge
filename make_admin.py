@@ -1,18 +1,12 @@
-import sqlite3
+def make_admin(username):
+    from app import get_db  # import inside function (important)
 
-conn = sqlite3.connect("database.db")
-cursor = conn.cursor()
+    conn = get_db()
+    conn.execute(
+        "UPDATE users SET is_admin=1 WHERE username=?",
+        (username,)
+    )
+    conn.commit()
+    conn.close()
 
-username = "tony"  # 👈 change this to your username
-
-cursor.execute("UPDATE users SET is_admin=1 WHERE username=?", (username,))
-conn.commit()
-
-print("✅ User promoted to admin")
-
-# verify
-cursor.execute("SELECT username, is_admin FROM users")
-for row in cursor.fetchall():
-    print(row)
-
-conn.close()
+    return f"{username} promoted to admin"
