@@ -708,17 +708,20 @@ def upload_csv():
 
     reader = csv.reader(content.splitlines())
 
-    # ✅ Skip header safely
+    # ✅ Read header safely
     header = next(reader, None)
+
+    # ✅ Detect format (with or without Question Number column)
+    use_offset = 1 if header and len(header) >= 7 else 0
 
     inserted = 0
 
     for row in reader:
         # ❌ Skip bad rows
-        if len(row) < 6:
+        if len(row) < (6 + use_offset):
             continue
 
-        question = row[0].strip()
+        question = row[0 + use_offset].strip()
 
         # ❌ Skip empty questions
         if not question:
@@ -731,12 +734,12 @@ def upload_csv():
         """, (
             subject_id,
             set_id,
-            row[0].strip(),
-            row[1].strip(),
-            row[2].strip(),
-            row[3].strip(),
-            row[4].strip(),
-            row[5].strip()
+            row[0 + use_offset].strip(),  # question
+            row[1 + use_offset].strip(),  # A
+            row[2 + use_offset].strip(),  # B
+            row[3 + use_offset].strip(),  # C
+            row[4 + use_offset].strip(),  # D
+            row[5 + use_offset].strip()   # correct
         ))
 
         inserted += 1
