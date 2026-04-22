@@ -1,0 +1,314 @@
+{% extends "base.html" %}
+{% block title %}Question {{ q_index + 1 }} — Departmental Test Practice{% endblock %}
+
+{% block head %}
+<style>
+    .test-layout {
+        display: grid;
+        grid-template-columns: 1fr 220px;
+        gap: 24px;
+        align-items: start;
+    }
+
+    /* QUESTION AREA */
+    .question-card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        padding: 28px;
+    }
+
+    .q-meta {
+        font-size: 0.8rem;
+        color: var(--text-muted);
+        margin-bottom: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+    .q-text {
+        font-family: 'Playfair Display', serif;
+        font-size: 1.15rem;
+        line-height: 1.7;
+        margin-bottom: 24px;
+        color: var(--text);
+    }
+
+    .option-label {
+        display: flex;
+        align-items: flex-start;
+        gap: 12px;
+        padding: 12px 16px;
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        margin-bottom: 10px;
+        cursor: pointer;
+        transition: border-color 0.15s, background 0.15s;
+        line-height: 1.5;
+    }
+
+    .option-label:hover { border-color: var(--gold-dim); background: rgba(201,168,76,0.04); }
+
+    .option-label input[type="radio"] { display: none; }
+
+    .option-label.selected {
+        border-color: var(--gold);
+        background: rgba(201,168,76,0.08);
+    }
+
+    .option-key {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 26px;
+        height: 26px;
+        border-radius: 50%;
+        background: var(--surface2);
+        border: 1px solid var(--border);
+        font-size: 0.75rem;
+        font-weight: 600;
+        flex-shrink: 0;
+        margin-top: 1px;
+        transition: background 0.15s, border-color 0.15s;
+    }
+
+    .option-label.selected .option-key {
+        background: var(--gold);
+        border-color: var(--gold);
+        color: #0f0e0c;
+    }
+
+    .test-actions {
+        display: flex;
+        gap: 10px;
+        margin-top: 20px;
+        flex-wrap: wrap;
+    }
+
+    /* TIMER */
+    #timer {
+        display: inline-block;
+        font-size: 0.85rem;
+        font-weight: 500;
+        color: var(--gold);
+        background: rgba(201,168,76,0.1);
+        border: 1px solid rgba(201,168,76,0.25);
+        border-radius: 20px;
+        padding: 4px 12px;
+    }
+
+    #timer.urgent { color: var(--red); background: rgba(201,92,76,0.1); border-color: rgba(201,92,76,0.25); }
+
+    /* SIDEBAR PANEL */
+    .panel-card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        padding: 20px;
+        position: sticky;
+        top: 76px;
+    }
+
+    .panel-title {
+        font-size: 0.75rem;
+        color: var(--text-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        margin-bottom: 14px;
+    }
+
+    .panel-grid {
+        display: grid;
+        grid-template-columns: repeat(5, 1fr);
+        gap: 6px;
+        margin-bottom: 20px;
+    }
+
+    .panel-btn {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        height: 32px;
+        border-radius: 5px;
+        font-size: 0.75rem;
+        font-weight: 500;
+        border: 1px solid var(--border);
+        background: var(--surface2);
+        color: var(--text-muted);
+        text-decoration: none;
+        transition: all 0.15s;
+    }
+
+    .panel-btn:hover { border-color: var(--gold-dim); color: var(--text); text-decoration: none; }
+    .panel-btn.answered { background: rgba(76,175,130,0.15); border-color: rgba(76,175,130,0.4); color: var(--green); }
+    .panel-btn.current { background: rgba(201,168,76,0.15); border-color: var(--gold); color: var(--gold); }
+
+    .panel-stats {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .stat-row {
+        display: flex;
+        justify-content: space-between;
+        font-size: 0.8rem;
+    }
+
+    .stat-row span:first-child { color: var(--text-muted); }
+
+    @media (max-width: 680px) {
+        .test-layout { grid-template-columns: 1fr; }
+        .panel-card { position: static; }
+    }
+</style>
+{% endblock %}
+
+{% block container_class %}main-wide{% endblock %}
+
+{% block content %}
+<div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:20px; flex-wrap:wrap; gap:12px;">
+    <div>
+        <span style="font-size:0.8rem; color:var(--text-muted);">{{ set_name }}</span>
+        <span style="margin:0 8px; color:var(--border);">|</span>
+        {% if session.get("mode") == "timed" %}
+            <span class="badge badge-gold">Timed Test</span>
+        {% else %}
+            <span class="badge badge-blue">Practice</span>
+        {% endif %}
+    </div>
+    {% if session.get("mode") == "timed" %}
+    <div id="timer">⏱ --:--</div>
+    {% endif %}
+</div>
+
+<div class="test-layout">
+    <!-- QUESTION -->
+    <div class="question-card">
+        <div class="q-meta">
+            <span>Question {{ q_index + 1 }} of {{ total }}</span>
+            <span id="save-status" style="color:var(--text-muted); font-size:0.75rem;"></span>
+        </div>
+
+        <div class="q-text">{{ question[1] }}</div>
+
+        {% set letters = ['A','B','C','D'] %}
+        {% set opts = [question[2], question[3], question[4], question[5]] %}
+
+        <div id="options">
+            {% for i in range(4) %}
+            {% set letter = letters[i] %}
+            <label class="option-label {% if answers.get(question[0]|string) == letter %}selected{% endif %}"
+                   onclick="selectOption(this, '{{ letter }}')">
+                <input type="radio" name="answer" value="{{ letter }}"
+                    {% if answers.get(question[0]|string) == letter %}checked{% endif %}>
+                <span class="option-key">{{ letter }}</span>
+                <span>{{ opts[i] }}</span>
+            </label>
+            {% endfor %}
+        </div>
+
+        <div class="test-actions">
+            {% if q_index > 0 %}
+            <a href="/question/{{ set_id }}/{{ q_index - 1 }}" class="btn btn-ghost">← Prev</a>
+            {% endif %}
+
+            {% if q_index + 1 < total %}
+            <a href="/question/{{ set_id }}/{{ q_index + 1 }}" class="btn btn-ghost">Next →</a>
+            {% endif %}
+
+            <button onclick="clearSelection()" class="btn btn-ghost" style="margin-left:auto;">✕ Clear</button>
+            <a href="/result/{{ set_id }}" class="btn btn-red">Finish Test</a>
+        </div>
+    </div>
+
+    <!-- PANEL -->
+    <div class="panel-card">
+        <div class="panel-title">Question Navigator</div>
+        <div class="panel-grid">
+            {% for i in range(total) %}
+            <a href="/question/{{ set_id }}/{{ i }}"
+               class="panel-btn {% if answers.get(question_ids[i]) %}answered{% endif %} {% if i == q_index %}current{% endif %}">
+                {{ i + 1 }}
+            </a>
+            {% endfor %}
+        </div>
+
+        <hr class="divider" style="margin:16px 0;">
+
+        <div class="panel-stats">
+            <div class="stat-row">
+                <span>Answered</span>
+                <span style="color:var(--green);">{{ answers|length }}</span>
+            </div>
+            <div class="stat-row">
+                <span>Remaining</span>
+                <span>{{ total - answers|length }}</span>
+            </div>
+            <div class="stat-row">
+                <span>Total</span>
+                <span>{{ total }}</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+const questionId = "{{ question[0] }}";
+const setId = "{{ set_id }}";
+let saveTimer = null;
+
+function selectOption(label, value) {
+    document.querySelectorAll('.option-label').forEach(l => l.classList.remove('selected'));
+    label.classList.add('selected');
+    label.querySelector('input').checked = true;
+    scheduleSave(value);
+}
+
+function clearSelection() {
+    document.querySelectorAll('.option-label').forEach(l => l.classList.remove('selected'));
+    document.querySelectorAll('input[name="answer"]').forEach(i => i.checked = false);
+    scheduleSave(null);
+}
+
+function scheduleSave(answer) {
+    clearTimeout(saveTimer);
+    document.getElementById('save-status').textContent = 'Saving…';
+    saveTimer = setTimeout(() => saveAnswer(answer), 400);
+}
+
+function saveAnswer(answer) {
+    fetch("/save_answer", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ question_id: questionId, answer: answer })
+    }).then(r => r.json()).then(d => {
+        document.getElementById('save-status').textContent = d.ok ? '✓ Saved' : '';
+        setTimeout(() => { document.getElementById('save-status').textContent = ''; }, 1500);
+    });
+}
+</script>
+
+{% if session.get("mode") == "timed" %}
+<script>
+let endTime = {{ session.get("end_time") }};
+const timerEl = document.getElementById("timer");
+
+function updateTimer() {
+    let remaining = Math.floor(endTime - Date.now() / 1000);
+    if (remaining <= 0) {
+        window.location.href = "/result/{{ set_id }}";
+        return;
+    }
+    let m = Math.floor(remaining / 60);
+    let s = String(remaining % 60).padStart(2, '0');
+    timerEl.textContent = `⏱ ${m}:${s}`;
+    if (remaining < 300) timerEl.classList.add('urgent');
+}
+
+updateTimer();
+setInterval(updateTimer, 1000);
+</script>
+{% endif %}
+{% endblock %}

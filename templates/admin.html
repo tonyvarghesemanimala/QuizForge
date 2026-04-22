@@ -1,0 +1,116 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="page-header">
+    <h1>Admin Panel</h1>
+    <p>Manage subjects, sets, questions, and PDFs</p>
+</div>
+
+<!-- ===================== ADD SUBJECT ===================== -->
+<div class="card">
+    <h3>Add Subject</h3>
+
+    <form method="POST" action="/admin/add_subject">
+        <input class="form-input" name="name" placeholder="Enter subject name (e.g. KFC)">
+        <br><br>
+        <button>Add Subject</button>
+    </form>
+</div>
+
+<!-- ===================== ADD SET ===================== -->
+<div class="card">
+    <h3>Add Question Set</h3>
+
+    <form method="POST" action="/admin/add_set">
+
+        <input class="form-input" name="name" placeholder="Set name (e.g. July 2025)">
+        <br><br>
+
+        <label>Select Subject</label><br>
+        <select class="form-input" name="subject_id">
+            {% for s in subjects %}
+            <option value="{{ s[0] }}">{{ s[1] }}</option>
+            {% endfor %}
+        </select>
+
+        <br><br>
+
+        <button>Add Set</button>
+    </form>
+</div>
+
+<!-- ===================== UPLOAD CSV ===================== -->
+<div class="card">
+    <h3>Upload CSV Questions</h3>
+
+    <form method="POST" action="/admin/upload_csv" enctype="multipart/form-data">
+
+        <label class="btn btn-gold">
+             Choose CSV
+             <input type="file" name="file" hidden>
+        </label>
+
+        <span id="csv-file-name" style="margin-left:10px; color: var(--text-muted);"></span>
+        <br><br>
+
+        <label>Select Subject</label><br>
+        <select name="subject_id">
+            {% for s in subjects %}
+            <option value="{{ s[0] }}">{{ s[1] }}</option>
+            {% endfor %}
+        </select>
+
+        <br><br>
+
+        <label>Select Set</label><br>
+        <select name="set_id">
+            {% for s in sets %}
+            <option value="{{ s[0] }}">{{ s[1] }}</option>
+            {% endfor %}
+        </select>
+
+        <br><br>
+
+        <button>Upload CSV</button>
+    </form>
+</div>
+
+<!-- ===================== UPLOAD PDF ===================== -->
+<div class="card">
+    <h3>Upload PDF (Textbook)</h3>
+
+    <form method="POST" action="/admin/upload_pdf" enctype="multipart/form-data">
+
+        <label>Select Subject</label><br>
+        <select name="subject_id">
+            {% for s in subjects %}
+            <option value="{{ s[0] }}">{{ s[1] }}</option>
+            {% endfor %}
+        </select>
+
+        <br><br>
+
+        <label class="btn btn-gold">
+             Choose PDF
+                <input type="file" name="pdf" hidden>
+        </label>
+
+        <span id="file-name" style="margin-left:10px; color: var(--text-muted);"></span>
+
+        <br><br>
+
+        <button>Upload PDF</button>
+    </form>
+</div>
+
+<script>
+    document.querySelectorAll('input[type="file"]').forEach(input => {
+        input.addEventListener('change', function() {
+            const fileName = this.files[0]?.name || "No file selected";
+            document.getElementById("file-name").textContent = fileName;
+        });
+    });
+</script>
+
+{% endblock %}

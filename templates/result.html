@@ -1,0 +1,201 @@
+{% extends "base.html" %}
+{% block title %}Result — Departmental Test Practice{% endblock %}
+
+{% block head %}
+<style>
+    .score-hero {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        padding: 40px;
+        text-align: center;
+        margin-bottom: 24px;
+    }
+
+    .score-number {
+        font-family: 'Playfair Display', serif;
+        font-size: 4rem;
+        color: var(--gold);
+        line-height: 1;
+    }
+
+    .score-label { color: var(--text-muted); font-size: 0.85rem; margin-top: 6px; }
+
+    .stats-row {
+        display: flex;
+        gap: 16px;
+        justify-content: center;
+        margin-top: 24px;
+        flex-wrap: wrap;
+    }
+
+    .stat-box {
+        padding: 14px 24px;
+        border-radius: var(--radius);
+        text-align: center;
+        min-width: 100px;
+    }
+
+    .stat-box .num { font-size: 1.6rem; font-weight: 700; }
+    .stat-box .lbl { font-size: 0.75rem; margin-top: 2px; color: var(--text-muted); }
+
+    .stat-box.correct { background: rgba(76,175,130,0.1); border: 1px solid rgba(76,175,130,0.3); }
+    .stat-box.correct .num { color: var(--green); }
+    .stat-box.wrong { background: rgba(201,92,76,0.1); border: 1px solid rgba(201,92,76,0.3); }
+    .stat-box.wrong .num { color: var(--red); }
+    .stat-box.skipped { background: rgba(122,114,96,0.1); border: 1px solid rgba(122,114,96,0.3); }
+    .stat-box.skipped .num { color: var(--text-muted); }
+
+    .review-item {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        padding: 20px;
+        margin-bottom: 12px;
+        border-left: 3px solid var(--border);
+    }
+
+    .review-item.correct { border-left-color: var(--green); }
+    .review-item.wrong { border-left-color: var(--red); }
+    .review-item.skipped { border-left-color: var(--text-muted); }
+
+    .review-q {
+        font-family: 'Playfair Display', serif;
+        font-size: 1rem;
+        margin-bottom: 12px;
+        line-height: 1.6;
+    }
+
+    .review-ans {
+        display: flex;
+        gap: 12px;
+        flex-wrap: wrap;
+        font-size: 0.85rem;
+    }
+
+    .ans-pill {
+        padding: 4px 10px;
+        border-radius: 20px;
+        font-weight: 500;
+    }
+
+    .ans-pill.correct { background: rgba(76,175,130,0.15); color: var(--green); }
+    .ans-pill.wrong-ans { background: rgba(201,92,76,0.15); color: var(--red); }
+    .ans-pill.neutral { background: var(--surface2); color: var(--text-muted); }
+
+    .review-toggle {
+        cursor: pointer;
+        color: var(--gold);
+        font-size: 0.85rem;
+        background: none;
+        border: none;
+        font-family: 'DM Sans', sans-serif;
+        padding: 0;
+        margin-bottom: 20px;
+    }
+
+    .review-toggle:hover { text-decoration: underline; }
+</style>
+{% endblock %}
+
+{% block content %}
+<a href="/" class="back-link" style="display:inline-flex;align-items:center;gap:6px;color:var(--text-muted);font-size:0.875rem;margin-bottom:20px;">← Back to Home</a>
+
+<div class="score-hero">
+    <div style="font-size:0.8rem; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.1em; margin-bottom:12px;">{{ set_name }}</div>
+    <div class="score-number">{{ score }}</div>
+    <div class="score-label">Final Score (correct − wrong÷3)</div>
+
+    <div class="stats-row">
+        <div class="stat-box correct">
+            <div class="num">{{ correct }}</div>
+            <div class="lbl">Correct</div>
+        </div>
+        <div class="stat-box wrong">
+            <div class="num">{{ wrong }}</div>
+            <div class="lbl">Wrong</div>
+        </div>
+        <div class="stat-box skipped">
+            <div class="num">{{ skipped }}</div>
+            <div class="lbl">Skipped</div>
+        </div>
+    </div>
+
+    <div style="margin-top:24px; display:flex; gap:10px; justify-content:center;">
+        <a href="/" class="btn btn-ghost">← Home</a>
+    </div>
+</div>
+
+<div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:16px;">
+    <h2 style="font-family:'Playfair Display',serif; font-size:1.2rem;">Answer Review</h2>
+    <button class="review-toggle" onclick="toggleReview()">Hide Review ▲</button>
+</div>
+
+<div id="review-section">
+    {% for r in review %}
+    <div class="review-item {{ r.status }}">
+        
+        <!-- QUESTION -->
+        <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:12px;">
+            <div class="review-q">{{ loop.index }}. {{ r.question }}</div>
+            <span class="badge 
+                {% if r.status == 'correct' %}badge-green
+                {% elif r.status == 'wrong' %}badge-red
+                {% else %}badge-gold
+                {% endif %}">
+                {{ r.status }}
+            </span>
+        </div>
+
+        <!-- OPTIONS -->
+        <div style="margin-top:10px;">
+            {% for key, value in r.options.items() %}
+                <div style="
+                    padding:6px;
+                    margin:4px 0;
+                    border-radius:6px;
+                    border:1px solid var(--border);
+
+                    {% if key == r.correct %}
+                        background-color: rgba(76,175,130,0.15);
+                        border-color: var(--green);
+                    {% elif key == r.user %}
+                        background-color: rgba(201,92,76,0.15);
+                        border-color: var(--red);
+                    {% endif %}
+                ">
+                    <b>{{ key }}.</b> {{ value }}
+                </div>
+            {% endfor %}
+        </div>
+
+        <!-- ANSWER SUMMARY -->
+        <div class="review-ans" style="margin-top:10px;">
+            <span class="ans-pill correct">
+                ✓ Correct: {{ r.correct }} — {{ r.options[r.correct] }}
+            </span>
+
+            {% if r.user and r.user != r.correct %}
+                <span class="ans-pill wrong-ans">
+                    ✗ Your answer: {{ r.user }} — {{ r.options[r.user] }}
+                </span>
+            {% elif r.status == 'skipped' %}
+                <span class="ans-pill neutral">
+                    — Not answered
+                </span>
+            {% endif %}
+        </div>
+
+    </div>
+    {% endfor %}
+</div>
+
+<script>
+let visible = true;
+function toggleReview() {
+    visible = !visible;
+    document.getElementById('review-section').style.display = visible ? 'block' : 'none';
+    document.querySelector('.review-toggle').textContent = visible ? 'Hide Review ▲' : 'Show Review ▼';
+}
+</script>
+{% endblock %}

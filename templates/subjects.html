@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+{% block title %}Subjects — Departmental Test Practice{% endblock %}
+
+{% block head %}
+<style>
+    .subject-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+        gap: 16px;
+    }
+
+    .subject-card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        padding: 24px;
+        transition: border-color 0.2s, transform 0.15s;
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+    }
+
+    .subject-card:hover {
+        border-color: var(--gold-dim);
+        transform: translateY(-2px);
+    }
+
+    .subject-icon {
+        font-size: 1.6rem;
+    }
+
+    .subject-name {
+        font-family: 'Playfair Display', serif;
+        font-size: 1.15rem;
+        color: var(--text);
+        margin-bottom: 4px;
+    }
+
+    .subject-actions {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 80px 24px;
+        color: var(--text-muted);
+    }
+
+    .empty-state p { margin-top: 12px; font-size: 0.9rem; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1>Your Subjects</h1>
+    <p>Select a subject to begin studying or testing yourself</p>
+</div>
+
+{% if subjects %}
+<div class="subject-grid">
+    {% for subject in subjects %}
+    <div class="subject-card">
+        <div>
+            <div class="subject-name">{{ subject[1] }}</div>
+        </div>
+        <div class="subject-actions">
+            <a href="/sets/{{ subject[0] }}" class="btn btn-gold btn-sm">📚 View Sets</a>
+            <a href="/superlearn/start/{{ subject[0] }}" class="btn btn-ghost btn-sm">🔥 Super Learn</a>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<div class="empty-state">
+    <div style="font-size:3rem;">📭</div>
+    <p>No subjects found. Ask your admin to add some content.</p>
+</div>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,299 @@
+{% extends "base.html" %}
+{% block title %}Learn — Departmental Test Practice{% endblock %}
+
+{% block head %}
+<style>
+    .learn-layout {
+        display: grid;
+        grid-template-columns: 1fr 340px;
+        gap: 20px;
+        align-items: start;
+    }
+
+    .progress-bar-wrap {
+        background: var(--surface2);
+        border-radius: 4px;
+        height: 6px;
+        margin-bottom: 24px;
+        overflow: hidden;
+    }
+
+    .progress-bar-fill {
+        height: 100%;
+        background: var(--gold);
+        border-radius: 4px;
+        transition: width 0.4s ease;
+    }
+
+    .progress-meta {
+        display: flex;
+        justify-content: space-between;
+        font-size: 0.8rem;
+        color: var(--text-muted);
+        margin-bottom: 8px;
+    }
+
+    .learn-card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        padding: 28px;
+    }
+
+    .q-text {
+        font-family: 'Playfair Display', serif;
+        font-size: 1.15rem;
+        line-height: 1.7;
+        margin-bottom: 24px;
+        color: var(--text);
+    }
+
+    .learn-option {
+        display: flex;
+        align-items: flex-start;
+        gap: 12px;
+        padding: 12px 16px;
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        margin-bottom: 10px;
+        cursor: pointer;
+        transition: all 0.15s;
+        user-select: none;
+    }
+
+    .learn-option:hover:not(.locked) { border-color: var(--gold-dim); background: rgba(201,168,76,0.04); }
+
+    .learn-option.correct-ans { border-color: var(--green); background: rgba(76,175,130,0.08); }
+    .learn-option.wrong-ans { border-color: var(--red); background: rgba(201,92,76,0.08); }
+
+    .opt-key {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 26px;
+        height: 26px;
+        border-radius: 50%;
+        background: var(--surface2);
+        border: 1px solid var(--border);
+        font-size: 0.75rem;
+        font-weight: 600;
+        flex-shrink: 0;
+        transition: all 0.15s;
+    }
+
+    .learn-option.correct-ans .opt-key { background: var(--green); border-color: var(--green); color: #0f0e0c; }
+    .learn-option.wrong-ans .opt-key { background: var(--red); border-color: var(--red); color: white; }
+
+    .result-msg {
+        display: none;
+        padding: 12px 16px;
+        border-radius: var(--radius);
+        margin-top: 16px;
+        font-weight: 500;
+        font-size: 0.9rem;
+    }
+
+    .result-msg.show { display: block; }
+    .result-msg.correct { background: rgba(76,175,130,0.1); border: 1px solid rgba(76,175,130,0.3); color: var(--green); }
+    .result-msg.wrong { background: rgba(201,92,76,0.1); border: 1px solid rgba(201,92,76,0.3); color: var(--red); }
+
+    .learn-actions {
+        display: flex;
+        gap: 10px;
+        margin-top: 20px;
+    }
+
+    /* PDF PANEL */
+    .pdf-panel {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        overflow: hidden;
+        position: sticky;
+        top: 76px;
+    }
+
+    .pdf-header {
+        padding: 14px 16px;
+        border-bottom: 1px solid var(--border);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        font-size: 0.8rem;
+    }
+
+    .pdf-header span { color: var(--text-muted); }
+
+    .page-save-area {
+        padding: 14px 16px;
+        border-top: 1px solid var(--border);
+        display: none;
+    }
+
+    .page-save-area.show { display: block; }
+
+    .page-input-row {
+        display: flex;
+        gap: 8px;
+    }
+
+    .page-input-row input {
+        flex: 1;
+        background: var(--surface2);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        padding: 7px 10px;
+        color: var(--text);
+        font-family: 'DM Sans', sans-serif;
+        font-size: 0.85rem;
+        outline: none;
+    }
+
+    .page-input-row input:focus { border-color: var(--gold-dim); }
+
+    @media (max-width: 700px) {
+        .learn-layout { grid-template-columns: 1fr; }
+        .pdf-panel { position: static; }
+    }
+</style>
+{% endblock %}
+
+{% block container_class %}main-wide{% endblock %}
+
+{% block content %}
+<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; flex-wrap:wrap; gap:8px;">
+    <div>
+        <span style="font-size:0.8rem; color:var(--text-muted);">{{ set_name }}</span>
+        <span class="badge badge-blue" style="margin-left:8px;">Learn Mode</span>
+    </div>
+    <a href="/" class="btn btn-ghost btn-sm">← Exit</a>
+</div>
+
+<div class="progress-meta">
+    <span>✅ {{ completed }} mastered</span>
+    <span>🔁 {{ remaining }} remaining</span>
+</div>
+<div class="progress-bar-wrap">
+    <div class="progress-bar-fill" style="width: {{ (completed / total_all * 100) if total_all else 0 }}%"></div>
+</div>
+
+<div class="learn-layout">
+    <!-- QUESTION -->
+    <div class="learn-card">
+        <div style="font-size:0.8rem; color:var(--text-muted); margin-bottom:12px;">
+            Question {{ q_index + 1 }} / {{ total }}
+        </div>
+
+        <div class="q-text">{{ question['question_text'] }}</div>
+
+        {% set letters = ['A','B','C','D'] %}
+        {% set opts = [question['option_a'], question['option_b'], question['option_c'], question['option_d']] %}
+
+        <div id="options">
+            {% for i in range(4) %}
+            <div class="learn-option" id="opt-{{ letters[i] }}" onclick="checkAnswer('{{ letters[i] }}')">
+                <span class="opt-key">{{ letters[i] }}</span>
+                <span>{{ opts[i] }}</span>
+            </div>
+            {% endfor %}
+        </div>
+
+        <div id="result-msg" class="result-msg"></div>
+
+        <div class="learn-actions">
+            <button class="btn btn-ghost" onclick="nextQuestion()">Next →</button>
+        </div>
+    </div>
+
+    <!-- PDF PANEL -->
+    <div class="pdf-panel">
+        <div class="pdf-header">
+            <span>📄 Reference PDF</span>
+            <button onclick="togglePDF()" class="btn btn-ghost btn-sm" id="toggleBtn">Hide</button>
+        </div>
+
+        <div id="pdf-container">
+            <iframe src="/static/pdfs/{{ learn_pdf }}/text.pdf#page={{ question['page'] or 1 }}"
+                    width="100%" height="420px" style="border:none; display:block;"></iframe>
+        </div>
+
+        <div id="page-save-area" class="page-save-area">
+            <div style="font-size:0.8rem; color:var(--text-muted); margin-bottom:8px;">Save page for this question:</div>
+            <div class="page-input-row">
+                <input type="number" id="pageNumber" placeholder="Page #" min="1" value="{{ question['page'] or '' }}">
+                <button class="btn btn-gold btn-sm" onclick="savePage()">Save</button>
+            </div>
+            <div id="page-saved" style="font-size:0.75rem; color:var(--green); margin-top:6px; display:none;">✓ Page saved</div>
+        </div>
+    </div>
+</div>
+
+<script>
+const correctAnswer = "{{ question['correct_option'] }}";
+const questionId = "{{ question['id'] }}";
+const setId = "{{ set_id }}";
+const qIndex = {{ q_index }};
+{% if is_superlearn is defined and is_superlearn %}
+const nextUrl = `/superlearn/{{ subject_id }}/${qIndex + 1}`;
+{% else %}
+const nextUrl = `/learn/${setId}/${qIndex + 1}`;
+{% endif %}
+
+let answered = false;
+let pdfVisible = true;
+
+function checkAnswer(selected) {
+    if (answered) return;
+    answered = true;
+
+    document.querySelectorAll('.learn-option').forEach(el => el.classList.add('locked'));
+
+    const isCorrect = selected === correctAnswer;
+
+    document.getElementById(`opt-${selected}`).classList.add(isCorrect ? 'correct-ans' : 'wrong-ans');
+
+    if (!isCorrect) {
+        document.getElementById(`opt-${correctAnswer}`).classList.add('correct-ans');
+    }
+
+    const msg = document.getElementById('result-msg');
+    msg.textContent = isCorrect ? '✓ Correct! This question is mastered.' : `✗ Incorrect. The answer is ${correctAnswer}.`;
+    msg.className = `result-msg show ${isCorrect ? 'correct' : 'wrong'}`;
+
+    document.getElementById('page-save-area').classList.add('show');
+
+    fetch("/learn_check", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ question_id: questionId, selected, correct: correctAnswer })
+    });
+}
+
+function nextQuestion() {
+    window.location.href = nextUrl;
+}
+
+function savePage() {
+    const page = document.getElementById('pageNumber').value;
+    if (!page) return;
+
+    fetch("/save_page", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ question_id: questionId, page: parseInt(page) })
+    }).then(() => {
+        const el = document.getElementById('page-saved');
+        el.style.display = 'block';
+        setTimeout(() => el.style.display = 'none', 2000);
+    });
+}
+
+function togglePDF() {
+    const container = document.getElementById('pdf-container');
+    const btn = document.getElementById('toggleBtn');
+    pdfVisible = !pdfVisible;
+    container.style.display = pdfVisible ? 'block' : 'none';
+    btn.textContent = pdfVisible ? 'Hide' : 'Show';
+}
+</script>
+{% endblock %}

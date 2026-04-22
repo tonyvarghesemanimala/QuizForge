@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Departmental Test Practice{% endblock %}</title>
+
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --bg: #0f0e0c;
+            --surface: #1a1915;
+            --surface2: #242218;
+            --border: #2e2c24;
+            --gold: #c9a84c;
+            --gold-dim: #8a7035;
+            --text: #e8e0d0;
+            --text-muted: #7a7260;
+            --green: #4caf82;
+            --red: #c95c4c;
+            --blue: #4c82c9;
+            --radius: 8px;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'DM Sans', sans-serif;
+            font-weight: 300;
+            min-height: 100vh;
+            line-height: 1.6;
+        }
+
+        /* ================= TOPBAR ================= */
+        .topbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 16px 32px;
+            border-bottom: 1px solid var(--border);
+            background: var(--surface);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .topbar-brand {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.3rem;
+            color: var(--gold);
+            text-decoration: none;
+            letter-spacing: 0.04em;
+        }
+
+        .topbar-right {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .topbar-user {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+
+        .topbar-user span {
+            color: var(--text);
+            font-weight: 500;
+        }
+
+        /* ================= MAIN ================= */
+        .main {
+            max-width: 860px;
+            margin: 0 auto;
+            padding: 40px 24px;
+        }
+
+        .main-wide {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 40px 24px;
+        }
+
+        /* ================= CARD ================= */
+        .card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 24px;
+            margin-bottom: 16px;
+        }
+
+        /* ================= HEADERS ================= */
+        .page-header {
+            margin-bottom: 36px;
+        }
+
+        .page-header h1 {
+            font-family: 'Playfair Display', serif;
+            font-size: 2rem;
+            margin-bottom: 6px;
+        }
+
+        .page-header p {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+
+        /* ================= BUTTONS ================= */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 10px 16px;
+            border-radius: var(--radius);
+            font-size: 0.9rem;
+            font-weight: 500;
+            cursor: pointer;
+            border: none;
+            text-decoration: none;
+            transition: all 0.15s ease;
+        }
+
+        .btn:hover { transform: translateY(-1px); opacity: 0.9; }
+
+        .btn-gold {
+            background: var(--gold);
+            color: #0f0e0c;
+        }
+
+        .btn-green {
+            background: var(--green);
+            color: #0f0e0c;
+        }
+
+        .btn-red {
+            background: var(--red);
+            color: white;
+        }
+
+        .btn-ghost {
+            background: transparent;
+            border: 1px solid var(--border);
+            color: var(--text-muted);
+        }
+
+        /* FORCE ALL BUTTONS TO LOOK GOOD */
+        button {
+            width: auto;
+            padding: 10px 16px;
+            border-radius: var(--radius);
+            background: var(--gold);
+            color: #0f0e0c;
+            border: none;
+            font-size: 0.9rem;
+            font-family: 'DM Sans', sans-serif;
+            cursor: pointer;
+            transition: all 0.15s ease;
+        }
+
+        button:hover {
+            opacity: 0.9;
+            transform: translateY(-1px);
+        }
+
+        /* ================= FORMS ================= */
+        .form-group {
+            margin-bottom: 18px;
+        }
+
+        .form-label {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            margin-bottom: 6px;
+            display: block;
+        }
+
+        .form-input,
+        select,
+        input[type="file"] {
+            width: 100%;
+            background: var(--surface2);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 10px 12px;
+            color: var(--text);
+            font-size: 0.9rem;
+            outline: none;
+        }
+
+        .form-input:focus,
+        select:focus {
+            border-color: var(--gold);
+        }
+
+        /* FIX: dropdown arrow visibility */
+        select {
+            appearance: none;
+        }
+
+        /* ================= LINKS ================= */
+        a {
+            color: var(--gold);
+            text-decoration: none;
+        }
+
+        a:hover {
+            text-decoration: underline;
+        }
+
+        /* ================= LOGOUT ================= */
+        .btn-logout {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            background: none;
+            border: none;
+            cursor: pointer;
+        }
+
+        .btn-logout:hover {
+            color: var(--red);
+        }
+
+        /* ================= TABLE ================= */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        td, th {
+            padding: 10px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        /* ================= ANIMATION ================= */
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(12px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .fade-in {
+            animation: fadeUp 0.3s ease forwards;
+        }
+
+    </style>
+
+    {% block head %}{% endblock %}
+</head>
+
+<body>
+
+{% if session.get("user_id") %}
+<nav class="topbar">
+    <a class="topbar-brand" href="/">✦ Departmental Test Practice</a>
+    <div class="topbar-right">
+        <span class="topbar-user">
+            Signed in as <span>{{ session.get("username") }}</span>
+        </span>
+        <a href="/logout" class="btn-logout">Logout →</a>
+    </div>
+</nav>
+{% endif %}
+
+<div class="{% block container_class %}main{% endblock %} fade-in">
+    {% block content %}{% endblock %}
+</div>
+
+</body>
+</html>

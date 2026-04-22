@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+{% block title %}Question Sets — Departmental Test Practice{% endblock %}
+
+{% block head %}
+<style>
+    .set-list { display: flex; flex-direction: column; gap: 12px; }
+
+    .set-card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        padding: 20px 24px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        transition: border-color 0.2s;
+        gap: 16px;
+    }
+
+    .set-card:hover { border-color: var(--gold-dim); }
+
+    .set-name {
+        font-family: 'Playfair Display', serif;
+        font-size: 1.05rem;
+        margin-bottom: 4px;
+    }
+
+    .set-actions {
+        display: flex;
+        gap: 8px;
+        flex-shrink: 0;
+        flex-wrap: wrap;
+    }
+
+    .back-link {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        color: var(--text-muted);
+        font-size: 0.875rem;
+        margin-bottom: 24px;
+    }
+
+    .back-link:hover { color: var(--text); text-decoration: none; }
+</style>
+{% endblock %}
+
+{% block content %}
+<a href="/" class="back-link">← Back to Subjects</a>
+
+<div class="page-header">
+    <h1>{{ subject_name }}</h1>
+    <p>Choose a question set and study mode</p>
+</div>
+
+{% if sets %}
+<div class="set-list">
+    {% for set in sets %}
+    <div class="set-card">
+        <div>
+            <div class="set-name">{{ set[1] }}</div>
+            <div style="font-size:0.8rem; color:var(--text-muted);">Question Set #{{ set[0] }}</div>
+        </div>
+        <div class="set-actions">
+            <a href="/learn/start/{{ set[0] }}" class="btn btn-ghost btn-sm">📘 Learn</a>
+            <a href="/start/{{ set[0] }}/practice" class="btn btn-ghost btn-sm">🕓 Practice</a>
+            <a href="/start/{{ set[0] }}/timed" class="btn btn-gold btn-sm">⏱️ Timed Test</a>
+            <a href="/history/{{ set[0] }}" class="btn btn-ghost btn-sm">📊 History</a>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<div style="text-align:center; padding:60px 24px; color:var(--text-muted);">
+    <div style="font-size:3rem;">📭</div>
+    <p style="margin-top:12px;">No question sets in this subject yet.</p>
+</div>
+{% endif %}
+{% endblock %}

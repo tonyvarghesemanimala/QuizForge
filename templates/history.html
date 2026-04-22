@@ -1,0 +1,77 @@
+{% extends "base.html" %}
+{% block title %}History — Departmental Test Practice{% endblock %}
+
+{% block head %}
+<style>
+    .history-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    .history-table th {
+        text-align: left;
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        color: var(--text-muted);
+        padding: 10px 16px;
+        border-bottom: 1px solid var(--border);
+    }
+
+    .history-table td {
+        padding: 14px 16px;
+        border-bottom: 1px solid var(--border);
+        font-size: 0.9rem;
+    }
+
+    .history-table tr:last-child td { border-bottom: none; }
+    .history-table tr:hover td { background: rgba(255,255,255,0.02); }
+
+    .score-cell {
+        font-family: 'Playfair Display', serif;
+        font-size: 1.1rem;
+        color: var(--gold);
+        font-weight: 700;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<a href="/" style="display:inline-flex;align-items:center;gap:6px;color:var(--text-muted);font-size:0.875rem;margin-bottom:20px;">← Back to Home</a>
+
+<div class="page-header">
+    <h1>Attempt History</h1>
+    <p>{{ set_name }} — your past results</p>
+</div>
+
+<div class="card" style="padding:0; overflow:hidden;">
+    {% if attempts %}
+    <table class="history-table">
+        <thead>
+            <tr>
+                <th>Score</th>
+                <th>Correct</th>
+                <th>Wrong</th>
+                <th>Skipped</th>
+                <th>Date & Time</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for a in attempts %}
+            <tr>
+                <td class="score-cell">{{ a[0] }}</td>
+                <td><span class="badge badge-green">{{ a[1] }}</span></td>
+                <td><span class="badge badge-red">{{ a[2] }}</span></td>
+                <td><span style="color:var(--text-muted);">{{ a[3] }}</span></td>
+                <td style="color:var(--text-muted);">{{ a[4] }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <div style="text-align:center; padding:48px; color:var(--text-muted);">
+        <p>No attempts recorded yet. Take a test first!</p>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
